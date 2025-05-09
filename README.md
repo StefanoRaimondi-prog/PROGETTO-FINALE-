@@ -1,7 +1,7 @@
 # PROGETTO-FINALE-
 # Progetto Finale Assicurazioni
 
-Questo progetto affronta la competition Kaggle **Playground Series S4E12**, con l'obiettivo di predire il **Premium Amount** di polizze assicurative sui dati di train/test forniti, raggiungendo un **RMSLE ≤ 1.03**.
+Questo progetto affronta la competition Kaggle **Playground Series S4E12**, con l'obiettivo di predire il **Premium Amount** di polizze assicurative sui dati di train/test forniti, raggiungendo un **RMSLE ≤ 1.05**.
 
 ## Struttura e logica del progetto
 

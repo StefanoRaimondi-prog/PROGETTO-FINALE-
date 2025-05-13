@@ -1,102 +1,125 @@
-# PROGETTO-FINALE-
-# Progetto Finale Assicurazioni
+🧾 README - Progetto Previsione Premio Assicurativo
+📌 Titolo del Progetto
+"Insurance Premium Prediction System"
+Un sistema predittivo intelligente per l’ottimizzazione dei premi assicurativi.
 
-Questo progetto affronta la competition Kaggle **Playground Series S4E12**, con l'obiettivo di predire il **Premium Amount** di polizze assicurative sui dati di train/test forniti, raggiungendo un **RMSLE ≤ 1.05**.
+🎯 Obiettivo del Progetto
+Sviluppare un sistema di machine learning capace di prevedere in modo accurato il premio assicurativo annuale per un cliente, sulla base del suo profilo anagrafico, comportamentale e storico.
 
-## Struttura e logica del progetto
+💼 Valore per il Business
+✅ Ottimizzazione della politica di pricing:
+Evita premi troppo alti → perdita di competitività
 
-Il flusso generale è suddiviso in 7 moduli Python, che vanno eseguiti in sequenza dall'estrazione delle feature fino alla creazione della submission:
+Evita premi troppo bassi → perdita economica
 
-1. **01\_feature\_temporali.py**
+✅ Profilazione del rischio più accurata:
+Include variabili comportamentali come:
 
-   * Carica `train.csv` e `test.csv`, parse della data `Policy Start Date`.
-   * Estrae feature temporali:
+Abitudine al fumo
 
-     * `Policy_Start_Year`, `Policy_Start_Month`, `Policy_Start_DayOfWeek`
-     * `Policy_Age_Days` (distanza dalla data di esecuzione)
-   * Salva `*_with_temporal.csv`.
+Frequenza di esercizio fisico
 
-2. **02\_missing\_flags.py**
+Feedback lasciato alla compagnia
 
-   * Carica i CSV con le feature temporali.
-   * Per ogni colonna originale (numeriche e categoriche), crea un flag booleano `_missing_flag` che indica valori nulli.
-   * Salva `*_with_missing_flags.csv`.
+✅ Riduzione del rischio finanziario:
+Grazie a modelli predittivi avanzati e metriche affidabili (RMSLE)
 
-3. **03\_eda.py**
+🔧 Tecnologie Utilizzate
+Strumento	Utilizzo
+Python	Linguaggio principale
+Pandas / NumPy	Gestione e trasformazione dei dati
+Scikit-learn	Preprocessing, pipeline, validazione
+LightGBM	Modello di regressione veloce e performante
+Optuna	Ottimizzazione iperparametri
+Matplotlib	Visualizzazione dei dati
+Joblib	Salvataggio e caricamento dei modelli
+CSV/Excel	Formato di input/output dei dati
+PowerShell/CLI	Esecuzione script interattivo
 
-   * Esegue un’analisi esplorativa del dataset (`train_with_missing_flags.csv`):
+🧠 Modello Predittivo
+Tipo: Regressore (LGBMRegressor)
 
-     * Distribuzioni statistiche (istogrammi, violin plot) delle variabili numeriche.
-     * Frequenze e counts delle categoriche.
-     * Matrice di correlazione e scatter plot tra `Health Score`, `Credit Score`, `Annual Income` e `Premium Amount`.
-   * Genera report e grafici in output (cartella `reports/`).
+Target: Premium Amount → valore continuo
 
-4. **04\_feature\_engineering.py**
+Metriche:
 
-   * Carica `*_with_missing_flags.csv`.
-   * Binning numerico:
+🟢 RMSLE train: ~1.04
 
-     * **Age\_bin**, **CreditScore\_bin**, **VehicleAge\_bin** con cuts predefiniti.
-   * Composite feature **HealthRisk\_index** = mappatura di `Smoking Status` (0–2) meno mappatura di `Exercise Frequency` (0–3).
-   * **Feedback\_length** dalla lunghezza testo di `Customer Feedback`.
-   * Salva `train_fe.csv` e `test_fe.csv`.
+🟡 RMSLE Kaggle: ~1.08 (competizione con test nascosto)
 
-5. **05\_validation\_and\_baseline.py**
+Validazione: Cross-Validation (KFold) su 5 fold
 
-   * Carica `train_fe.csv`.
-   * Seleziona X/y, log1p trasforma `Premium Amount` per stabilità numerica.
-   * Costruisce pipeline:
+🗂️ Struttura del Progetto (Moduli Principali)
+Modulo	Descrizione
+01_preprocessing.py	Pulizia iniziale, gestione missing values
+02_feature_engineering.py	Creazione di nuove variabili derivate (es. flag, binning, date parsing)
+03_eda.py	Analisi esplorativa (statistiche, istogrammi, frequenze)
+04_model_training.py	Training iniziale del modello con metriche di base
+05_validation.py	Cross-validation + salvataggio modello più performante
+06_hyperparameter_tuning.py	Tuning automatico con Optuna per trovare la combinazione ottimale
+07_generate_submission.py	Predizione finale + creazione file submission.csv per competizione Kaggle
+interactive_menu.py	Menù CLI per uso pratico del sistema (inserimento dati + predizione live)
 
-     * Imputer (median) + **StandardScaler** per variabili numeriche.
-     * Imputer (constant) + **OrdinalEncoder** per categoriche.
-   * Addestra un **LightGBMRegressor** di base su 5-fold CV, misura RMSLE per fold e media.
-   * Fit finale su tutti i dati, salva pipeline in `baseline_lgbm_pipeline.pkl`.
+📈 Visualizzazione e Supporto Commerciale
+Output grafici esportati in PNG:
 
-6. **06\_hyperparameter\_tuning.py**
+Istogrammi
 
-   * Carica `train_fe.csv` e preprocessa una volta.
-   * Usa **Optuna** per la ricerca su 5-fold CV (trigger 5 trial rapidi):
+Matrice di correlazione
 
-     * Parametri campionati: `n_estimators`, `learning_rate`, `num_leaves`, `max_depth`, `min_data_in_leaf`, `lambda_l1`, `lambda_l2`, `feature_fraction`, `bagging_fraction`, `bagging_freq`.
-   * Restituisce il **Best trial** (RMSLE + parametri) e salva in `best_lgbm_params.pkl`.
+File Excel e CSV per analisi:
 
-7. **07\_generate\_submission.py**
+Frequenze categorie
 
-   * Carica `train_fe.csv`, `test_fe.csv`, i migliori parametri da Optuna e `sample_submission.csv`.
-   * Ricostruisce la stessa pipeline di preprocessing + **LGBMRegressor** con `best_lgbm_params.pkl`.
-   * Fit su tutti i dati di train (log1p target), predice su test, esponenziale inversa e clip ≥0.
-   * Allinea le predizioni con gli ID via merge, salva `submission.csv` pronta per Kaggle.
+Statistiche numeriche
 
----
+Performance modello salvate in baseline_scores.txt
 
-## Strumenti e librerie utilizzate
+Menù interattivo per demo dal vivo
 
-* **Python 3.10**
-* **Pandas** / **NumPy** per gestione dati e feature engineering
-* **scikit-learn** per pipeline, preprocessing (Imputer, StandardScaler, OrdinalEncoder), K-Fold CV, metriche (RMSLE)
-* **LightGBM** per il modello base e ottimizzato
-* **Optuna** per hyperparameter tuning
-* **Joblib** per serializzazione modelli e parametri
-* **Matplotlib** / **Seaborn** (nel modulo EDA) per grafici esplorativi
-* **CLI script** (`interactive_menu.py`) per un menu interattivo di esplorazione e predizione
+Predizione premio a partire da input utente
 
-## Come eseguire il progetto
+⚠️ Principali Sfide Affrontate
+Sfida	Soluzione adottata
+Dataset con 1.2M di record	Pulizia e imputazione automatica + salvataggio in CSV ottimizzati
+Elevata cardinalità categoriche	Target encoding personalizzato e ordinamento gestito
+Overfitting	KFold + regolarizzazione + log-transform sul target
+Incoerenze tra train/test	Uso di pipeline per allineare feature engineering
+RMSLE su Kaggle più alto	Analisi approfondita del comportamento del test nascosto
 
-1. Posizionarsi nella cartella del progetto con i file `train.csv`, `test.csv`, `sample_submission.csv`.
-2. Eseguire in ordine i moduli:
+🧪 Uso del Menù Interattivo
+Comando:
 
-   ```bash
-   python 01_feature_temporali.py
-   python 02_missing_flags.py
-   python 03_eda.py    # opzionale, genera grafici
-   python 04_feature_engineering.py
-   python 05_validation_and_baseline.py
-   python 06_hyperparameter_tuning.py
-   python 07_generate_submission.py
-   ```
-3. Caricare `submission.csv` su Kaggle per ottenere il punteggio RMSLE.
-4. (Opzionale) Avviare `python interactive_menu.py` per un’interfaccia CLI.
+bash
+Copia
+Modifica
+python interactive_menu.py
+Funzionalità disponibili:
 
----
+Riepilogo statistico
 
-Con questa pipeline strutturata è facile iterare: si possono aggiungere nuove feature, provare modelli alternativi o raffinare ulteriormente l’hyperparameter tuning per migliorare il punteggio finale.
+Visualizzazione bins
+
+Logica dell’indice HealthRisk
+
+Performance del modello
+
+Inserimento cliente per predizione reale
+
+Visualizzazione grafici (EDA)
+
+🧮 Logiche Proprietarie Implementate
+HealthRisk_index: differenza tra livello di fumo e frequenza di esercizio
+
+Feedback_length: metrica del sentiment implicito dal feedback
+
+missing_flags: utili per rilevare dati parziali e stimare rischi nascosti
+
+🚀 Espansioni Future
+Integrazione con frontend web per demo commerciale
+
+Uso di explainability tool (SHAP)
+
+Integrazione con database assicurativo reale
+
+Rilascio in ambiente cloud (es. AWS, GCP)tuning per migliorare il punteggio finale.

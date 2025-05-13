@@ -1,125 +1,117 @@
-🧾 README - Progetto Previsione Premio Assicurativo
-📌 Titolo del Progetto
-"Insurance Premium Prediction System"
-Un sistema predittivo intelligente per l’ottimizzazione dei premi assicurativi.
+1. Caricamento e pulizia dei dati
+Logica:
 
-🎯 Obiettivo del Progetto
-Sviluppare un sistema di machine learning capace di prevedere in modo accurato il premio assicurativo annuale per un cliente, sulla base del suo profilo anagrafico, comportamentale e storico.
+Lettura dei dataset train.csv e test.csv
 
-💼 Valore per il Business
-✅ Ottimizzazione della politica di pricing:
-Evita premi troppo alti → perdita di competitività
+Gestione dei valori mancanti con flag dedicati (*_missing_flag)
+File: 01_preprocessing.py
 
-Evita premi troppo bassi → perdita economica
+2. Feature Engineering
+Logica:
 
-✅ Profilazione del rischio più accurata:
-Include variabili comportamentali come:
+Creazione di nuove feature basate su data (Policy_Age_Days, Policy_Start_Year, ecc.)
 
-Abitudine al fumo
+Binning di età, credit score e vehicle age (Age_bin, CreditScore_bin, VehicleAge_bin)
 
-Frequenza di esercizio fisico
+Lunghezza del feedback cliente (Feedback_length)
+File: 02_feature_engineering.py
 
-Feedback lasciato alla compagnia
+3. Analisi esplorativa dei dati (EDA)
+Logica:
 
-✅ Riduzione del rischio finanziario:
-Grazie a modelli predittivi avanzati e metriche affidabili (RMSLE)
+Statistiche descrittive su numeriche e categoriche
 
-🔧 Tecnologie Utilizzate
-Strumento	Utilizzo
-Python	Linguaggio principale
-Pandas / NumPy	Gestione e trasformazione dei dati
-Scikit-learn	Preprocessing, pipeline, validazione
-LightGBM	Modello di regressione veloce e performante
-Optuna	Ottimizzazione iperparametri
-Matplotlib	Visualizzazione dei dati
-Joblib	Salvataggio e caricamento dei modelli
-CSV/Excel	Formato di input/output dei dati
-PowerShell/CLI	Esecuzione script interattivo
+Frequenze delle categorie principali
 
-🧠 Modello Predittivo
-Tipo: Regressore (LGBMRegressor)
+Correlazioni tra le variabili
 
-Target: Premium Amount → valore continuo
+Salvataggio di grafici e output per reporting
+File: 03_eda.py
 
-Metriche:
+4. Calcolo dell’Health Risk Index
+Logica:
 
-🟢 RMSLE train: ~1.04
+Assegnazione di punteggi a comportamenti salutari:
+HealthRisk_index = SMOKING_SCORE - EXERCISE_SCORE
 
-🟡 RMSLE Kaggle: ~1.08 (competizione con test nascosto)
+Utile per inferire il rischio assicurativo legato allo stile di vita
+File: 02_feature_engineering.py, visualizzato anche nel interactive_menu.py
 
-Validazione: Cross-Validation (KFold) su 5 fold
+5. Preprocessing dinamico
+Logica:
 
-🗂️ Struttura del Progetto (Moduli Principali)
-Modulo	Descrizione
-01_preprocessing.py	Pulizia iniziale, gestione missing values
-02_feature_engineering.py	Creazione di nuove variabili derivate (es. flag, binning, date parsing)
-03_eda.py	Analisi esplorativa (statistiche, istogrammi, frequenze)
-04_model_training.py	Training iniziale del modello con metriche di base
-05_validation.py	Cross-validation + salvataggio modello più performante
-06_hyperparameter_tuning.py	Tuning automatico con Optuna per trovare la combinazione ottimale
-07_generate_submission.py	Predizione finale + creazione file submission.csv per competizione Kaggle
-interactive_menu.py	Menù CLI per uso pratico del sistema (inserimento dati + predizione live)
+Preprocessing delle variabili numeriche con SimpleImputer + StandardScaler
 
-📈 Visualizzazione e Supporto Commerciale
-Output grafici esportati in PNG:
+Preprocessing delle categoriche con SimpleImputer + OrdinalEncoder
 
-Istogrammi
+Gestione dei dati tramite ColumnTransformer
+File: 05_validation.py, 07_generate_submission.py
 
-Matrice di correlazione
+6. Cross-Validation (CV)
+Logica:
 
-File Excel e CSV per analisi:
+Validazione del modello con KFold(n_splits=5)
 
-Frequenze categorie
+Calcolo del punteggio RMSLE medio su 5 suddivisioni
+File: 05_validation.py
+Obiettivo: ottenere stime robuste delle performance
 
-Statistiche numeriche
+7. Modellazione con LightGBM
+Logica:
 
-Performance modello salvate in baseline_scores.txt
+Uso di LGBMRegressor per gestire problemi di regressione complessi e dataset ampi
 
-Menù interattivo per demo dal vivo
+Ottimizzazione iperparametri (in 06_hyperparameter_tuning.py)
+File: 05_validation.py, 06_hyperparameter_tuning.py, 07_generate_submission.py
 
-Predizione premio a partire da input utente
+8. Salvataggio del modello e pipeline
+Logica:
 
-⚠️ Principali Sfide Affrontate
-Sfida	Soluzione adottata
-Dataset con 1.2M di record	Pulizia e imputazione automatica + salvataggio in CSV ottimizzati
-Elevata cardinalità categoriche	Target encoding personalizzato e ordinamento gestito
-Overfitting	KFold + regolarizzazione + log-transform sul target
-Incoerenze tra train/test	Uso di pipeline per allineare feature engineering
-RMSLE su Kaggle più alto	Analisi approfondita del comportamento del test nascosto
+L’intero pipeline (preprocessor + regressor) salvato in un file .pkl
+File: 05_validation.py
+Uso successivo: riutilizzato per predizioni nel interactive_menu.py
 
-🧪 Uso del Menù Interattivo
-Comando:
+9. Predizione interattiva per nuovi clienti
+Logica:
 
-bash
-Copia
-Modifica
-python interactive_menu.py
-Funzionalità disponibili:
+Input utente → feature engineering in tempo reale
 
-Riepilogo statistico
+Passaggio dei dati nel modello già addestrato
 
-Visualizzazione bins
+Output: stima del premio assicurativo
+File: interactive_menu.py
 
-Logica dell’indice HealthRisk
+10. Menù CLI interattivo
+Logica:
+
+Interfaccia a riga di comando con più voci:
+
+Riepilogo dataset
+
+Logiche di calcolo
 
 Performance del modello
 
-Inserimento cliente per predizione reale
+Predizione nuova
 
-Visualizzazione grafici (EDA)
+Visualizzazione grafici
+File: interactive_menu.py
 
-🧮 Logiche Proprietarie Implementate
-HealthRisk_index: differenza tra livello di fumo e frequenza di esercizio
+11. Salvataggio e caricamento file esterni
+Logica:
 
-Feedback_length: metrica del sentiment implicito dal feedback
+Esportazione CSV (numeric_stats.csv, correlation_matrix.csv)
 
-missing_flags: utili per rilevare dati parziali e stimare rischi nascosti
+Salvataggio output EDA (hist_x.png)
 
-🚀 Espansioni Future
-Integrazione con frontend web per demo commerciale
+Caricamento modello (.pkl) e sample_submission
+File: vari
 
-Uso di explainability tool (SHAP)
+12. Metrica RMSLE per regressione
+Logica:
 
-Integrazione con database assicurativo reale
+Uso di Root Mean Squared Logarithmic Error per premi assicurativi
 
-Rilascio in ambiente cloud (es. AWS, GCP)tuning per migliorare il punteggio finale.
+Più adatta di RMSE per target asimmetrici e positivi
+File: 05_validation.py, 07_generate_submission.py
+

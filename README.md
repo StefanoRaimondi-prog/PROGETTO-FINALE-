@@ -71,7 +71,7 @@ Il flusso generale è suddiviso in 7 moduli Python, che vanno eseguiti in sequen
 
 ## Strumenti e librerie utilizzate
 
-* **Python 3.13**
+* **Python 3.10**
 * **Pandas** / **NumPy** per gestione dati e feature engineering
 * **scikit-learn** per pipeline, preprocessing (Imputer, StandardScaler, OrdinalEncoder), K-Fold CV, metriche (RMSLE)
 * **LightGBM** per il modello base e ottimizzato
